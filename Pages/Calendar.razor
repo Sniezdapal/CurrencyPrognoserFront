@@ -1,6 +1,30 @@
 @page "/calendar"
 
 <h1>Calendar</h1>
+<h6>Choose previous date to see currency rate changes.</h6>
+<RadzenDatePicker @bind-Value=@timeFrom DateFormat="d" Change="@(args => {CheckDate();})"></RadzenDatePicker>
+@if (dateIsChosen)
+{
+    // Plot graphic here.
+    <h2>Plot</h2>
+}
+else
+{
+    <h3>You have to choose previous days only.</h3>
+}
 
 @code {
+    DateTime timeFrom = DateTime.Now.Date;
+    DateTime timeTo = DateTime.Now.Date;
+    bool dateIsChosen = false;
+
+    void CheckDate()
+    {
+        dateIsChosen = timeFrom < timeTo;
+    }
+
+    void Plot(DateTime time)
+    {
+
+    }
 }
