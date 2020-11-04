@@ -1,12 +1,27 @@
 @page "/calendar"
 
 <h1>Calendar</h1>
-<h6>Choose previous date to see currency rate changes.</h6>
-<RadzenDatePicker @bind-Value=@timeFrom DateFormat="d" Change="@(args => {CheckDate();})"></RadzenDatePicker>
-@if (dateIsChosen)
+
+<h6>Choose previous date to see currency rate changes:</h6>
+<RadzenDatePicker @bind-Value=@timeFrom DateFormat="d" Style="margin-bottom: 20px;"></RadzenDatePicker>
+@if (CheckDate())
 {
-    // Plot graphic here.
-    <h2>Plot</h2>
+    <h6>Now tell us what currency to track:</h6>
+    <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Multiple="true"
+    Data=currencyList @bind-Value=currencyValues Style="margin-bottom: 20px; display: block;" />
+    <RadzenButton Text="Get Data!" Click="@(args => Plot())" Style="margin-bottom: 20px;" />
+    @if (items != null && currencyValues.Any())
+    {
+        <h2>Currency rates for @string.Join(", ", currencyValues)</h2>
+        <span>I want it to be smooth!</span>
+        <RadzenCheckBox @bind-Value=isSmooth></RadzenCheckBox>
+        <RadzenChart>
+            <RadzenLineSeries Data="@items" CategoryProperty="Date" ValueProperty="CurrencyRate"
+        Title="@string.Join(",", currencyValues)" Smooth="@isSmooth">
+                <RadzenMarkers MarkerType="MarkerType.Circle" />
+            </RadzenLineSeries>
+        </RadzenChart>
+    }
 }
 else
 {
@@ -16,15 +31,36 @@ else
 @code {
     DateTime timeFrom = DateTime.Now.Date;
     DateTime timeTo = DateTime.Now.Date;
-    bool dateIsChosen = false;
+    bool isSmooth = false;
+    IEnumerable<string> currencyValues = new string[] { };
+    IEnumerable<string> currencyList = new string[] { "USD", "EUR" };
+    DataItem[] items;
 
-    void CheckDate()
+    bool CheckDate()
     {
-        dateIsChosen = timeFrom < timeTo;
+        return timeFrom < timeTo;
     }
 
-    void Plot(DateTime time)
+    void Plot()
     {
+        items = null;
+        GetData();
+    }
 
+    void GetData()
+    {
+        if (currencyValues.Any())
+        {
+            var numOfDays = (timeTo - timeFrom).Days;
+            items = new DataItem[numOfDays];
+            items = items.Select(dataItem => dataItem = new DataItem()
+            {
+                Date = DateTime.Now.Date.AddDays(-numOfDays--),
+                CurrencyRate
+                = new Random().NextDouble()
+            }).ToArray();
+        }
+
+        // TODO: CALL API TO RETREIVE DATA
     }
 }
