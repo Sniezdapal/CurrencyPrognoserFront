@@ -1,6 +1,6 @@
 using System;
 
-namespace CurrencyPrognoser
+namespace CurrencyPrognoser.Models
 {
     struct DataItem
     {

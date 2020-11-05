@@ -1,4 +1,5 @@
 @page "/calendar"
+@using CurrencyPrognoser.Models
 
 <h1>Calendar</h1>
 
@@ -10,16 +11,18 @@
     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Multiple="true"
     Data=currencyList @bind-Value=currencyValues Style="margin-bottom: 20px; display: block;" />
     <RadzenButton Text="Get Data!" Click="@(args => Plot())" Style="margin-bottom: 20px;" />
-    @if (items != null && currencyValues.Any())
+    @if (data.Any())
     {
         <h2>Currency rates for @string.Join(", ", currencyValues)</h2>
         <span>I want it to be smooth!</span>
         <RadzenCheckBox @bind-Value=isSmooth></RadzenCheckBox>
         <RadzenChart>
-            <RadzenLineSeries Data="@items" CategoryProperty="Date" ValueProperty="CurrencyRate"
-        Title="@string.Join(",", currencyValues)" Smooth="@isSmooth">
+            @foreach (var dataSet in data)
+            {
+                <RadzenLineSeries Data="@dataSet.Items" CategoryProperty="Date" ValueProperty="CurrencyRate" Title="@GetCurrencyName(dataSet)" Smooth=isSmooth >
                 <RadzenMarkers MarkerType="MarkerType.Circle" />
-            </RadzenLineSeries>
+                </RadzenLineSeries>
+            }
         </RadzenChart>
     }
 }
@@ -29,36 +32,48 @@ else
 }
 
 @code {
-    DateTime timeFrom = DateTime.Now.Date;
+    DateTime timeFrom = DateTime.Now.Date.AddDays(-10);
     DateTime timeTo = DateTime.Now.Date;
     bool isSmooth = false;
-    IEnumerable<string> currencyValues = new string[] { };
+    IEnumerable<string> currencyValues = new string[] { "USD" };
     IEnumerable<string> currencyList = new string[] { "USD", "EUR" };
-    DataItem[] items;
+    List<DataSet> data = new List<DataSet>();
 
     bool CheckDate()
     {
         return timeFrom < timeTo;
     }
-
+    
+    string GetCurrencyName(DataSet set) => set.CurrencyName;
     void Plot()
     {
-        items = null;
         GetData();
     }
 
     void GetData()
     {
+        data.Clear();
         if (currencyValues.Any())
         {
             var numOfDays = (timeTo - timeFrom).Days;
-            items = new DataItem[numOfDays];
-            items = items.Select(dataItem => dataItem = new DataItem()
+            foreach(var currency in currencyValues)
             {
-                Date = DateTime.Now.Date.AddDays(-numOfDays--),
-                CurrencyRate
-                = new Random().NextDouble()
-            }).ToArray();
+            var t = numOfDays;
+                DataSet newSet = new DataSet
+                {
+                    Items = new DataItem[numOfDays],
+                    CurrencyName = currency
+                };
+                newSet.Items = newSet.Items.Select(item => {
+                    item.Date = DateTime.Now.Date.AddDays(-t--);
+                    item.CurrencyRate = new Random().NextDouble();
+                    return item;
+                }).ToArray();
+                data.Add(newSet);
+            Console.WriteLine(newSet.CurrencyName);
+            Console.WriteLine(string.Join(", ", newSet.Items));
+            }
+
         }
 
         // TODO: CALL API TO RETREIVE DATA
