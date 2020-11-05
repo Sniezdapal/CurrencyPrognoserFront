@@ -1,5 +1,6 @@
 @page "/calendar"
-@using CurrencyPrognoser.Models
+@using Models
+
 
 <h1>Calendar</h1>
 
@@ -11,19 +12,11 @@
     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Multiple="true"
     Data=currencyList @bind-Value=currencyValues Style="margin-bottom: 20px; display: block;" />
     <RadzenButton Text="Get Data!" Click="@(args => Plot())" Style="margin-bottom: 20px;" />
-    @if (data.Any())
+    @if (data.Count != 0)
     {
         <h2>Currency rates for @string.Join(", ", currencyValues)</h2>
         <span>I want it to be smooth!</span>
-        <RadzenCheckBox @bind-Value=isSmooth></RadzenCheckBox>
-        <RadzenChart>
-            @foreach (var dataSet in data)
-            {
-                <RadzenLineSeries Data="@dataSet.Items" CategoryProperty="Date" ValueProperty="CurrencyRate" Title="@GetCurrencyName(dataSet)" Smooth=isSmooth >
-                <RadzenMarkers MarkerType="MarkerType.Circle" />
-                </RadzenLineSeries>
-            }
-        </RadzenChart>
+        <Chart Data=data></Chart>
     }
 }
 else
@@ -43,8 +36,6 @@ else
     {
         return timeFrom < timeTo;
     }
-    
-    string GetCurrencyName(DataSet set) => set.CurrencyName;
     void Plot()
     {
         GetData();
@@ -58,7 +49,7 @@ else
             var numOfDays = (timeTo - timeFrom).Days;
             foreach(var currency in currencyValues)
             {
-            var t = numOfDays;
+                var t = numOfDays;
                 DataSet newSet = new DataSet
                 {
                     Items = new DataItem[numOfDays],
@@ -66,7 +57,7 @@ else
                 };
                 newSet.Items = newSet.Items.Select(item => {
                     item.Date = DateTime.Now.Date.AddDays(-t--);
-                    item.CurrencyRate = new Random().NextDouble();
+                    item.CurrencyRate = (new Random().NextDouble() * 0.2) + 2;
                     return item;
                 }).ToArray();
                 data.Add(newSet);

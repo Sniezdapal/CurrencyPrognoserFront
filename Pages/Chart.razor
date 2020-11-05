@@ -1,0 +1,18 @@
+﻿@using Models
+<RadzenCheckBox @bind-Value=isSmooth></RadzenCheckBox>
+<RadzenChart>
+    @foreach (var dataSet in Data)
+        {
+            <RadzenLineSeries Data="@dataSet.Items" CategoryProperty="Date" ValueProperty="CurrencyRate"
+                Title="@dataSet.CurrencyName" Smooth="@isSmooth">
+                <RadzenMarkers MarkerType="MarkerType.Circle" />
+            </RadzenLineSeries>
+        }
+        </RadzenChart>
+
+
+        @code {
+    [Parameter]
+    public List<DataSet> Data { get; set; }
+    bool isSmooth;
+}
