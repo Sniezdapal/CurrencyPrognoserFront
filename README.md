@@ -4,4 +4,6 @@ Uses Radzen.Blazor components.
 
 TODO:
 - implement calendar component: working with api
-- implement calculator component: needs graph visualiser with choosing dates + working with api
+- implement calculator component: working with api
+- working with api should be implemented through the interface (IRepository like)
+- trackable currencies should be extruded to specific class 
