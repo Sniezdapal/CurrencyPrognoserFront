@@ -1,0 +1,72 @@
+@page "/calendar"
+@using Models
+
+
+<h1>Calendar</h1>
+
+<h6>Choose previous date to see currency rate changes:</h6>
+<RadzenDatePicker @bind-Value=@timeFrom DateFormat="d" Style="margin-bottom: 20px;"></RadzenDatePicker>
+@if (CheckDate())
+{
+    <h6>Now tell us what currency to track:</h6>
+    <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Multiple="true"
+    Data=currencyList @bind-Value=currencyValues Style="margin-bottom: 20px; display: block;" />
+    <RadzenButton Text="Get Data!" Click="@(args => Plot())" Style="margin-bottom: 20px;" />
+    @if (data.Count != 0)
+    {
+        <h2>Currency rates for @string.Join(", ", currencyValues)</h2>
+        <span>I want it to be smooth!</span>
+        <Chart Data=data></Chart>
+    }
+}
+else
+{
+    <h3>You have to choose previous days only.</h3>
+}
+
+@code {
+    DateTime timeFrom = DateTime.Now.Date.AddDays(-10);
+    DateTime timeTo = DateTime.Now.Date;
+    bool isSmooth = false;
+    IEnumerable<string> currencyValues = new string[] { "USD" };
+    IEnumerable<string> currencyList = new string[] { "USD", "EUR" };
+    List<DataSet> data = new List<DataSet>();
+
+    bool CheckDate()
+    {
+        return timeFrom < timeTo;
+    }
+    void Plot()
+    {
+        GetData();
+    }
+
+    void GetData()
+    {
+        data.Clear();
+        if (currencyValues.Any())
+        {
+            var numOfDays = (timeTo - timeFrom).Days;
+            foreach(var currency in currencyValues)
+            {
+                var t = numOfDays;
+                DataSet newSet = new DataSet
+                {
+                    Items = new DataItem[numOfDays],
+                    CurrencyName = currency
+                };
+                newSet.Items = newSet.Items.Select(item => {
+                    item.Date = DateTime.Now.Date.AddDays(-t--);
+                    item.CurrencyRate = (new Random().NextDouble() * 0.2) + 2;
+                    return item;
+                }).ToArray();
+                data.Add(newSet);
+            Console.WriteLine(newSet.CurrencyName);
+            Console.WriteLine(string.Join(", ", newSet.Items));
+            }
+
+        }
+
+        // TODO: CALL API TO RETREIVE DATA
+    }
+}
