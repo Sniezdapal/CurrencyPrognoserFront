@@ -1,6 +1,8 @@
 @page "/calculator"
 @using Models
-
+@using System.Text
+@using Newtonsoft.Json
+@inject HttpClient client
 <h1>Calculator</h1>
 <h6>Choose date to predict currency rate changes:</h6>
 <RadzenDatePicker @bind-Value=@timeTo DateFormat="d" Style="margin-bottom: 20px;"></RadzenDatePicker>
@@ -23,7 +25,7 @@ else
 }
 
 @code {
-    DateTime timeFrom = DateTime.Now.Date;
+    DateTime timeFrom = DateTime.Now.Date.AddDays(-30);
     DateTime timeTo = DateTime.Now.Date.AddDays(10);
     bool isSmooth = false;
     IEnumerable<string> currencyValues = new string[] { "USD" };
@@ -32,39 +34,36 @@ else
 
     bool CheckDate()
     {
-        return timeFrom < timeTo;
+        return true;
     }
     void Plot()
     {
         GetData();
     }
 
-    void GetData()
+    async void GetData()
     {
         data.Clear();
-        if (currencyValues.Any())
+        var json = new Request() {
+            begin = timeFrom.ToTimestamp().ToString(), end = timeTo.ToTimestamp().ToString(), currency_names = currencyValues.ToArray()
+            }.ToJson();
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("http://localhost:5000/get_currency", content);
+        var tt = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(tt);
+        var d = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, double>>>(tt);
+        foreach(var key in d.Keys)
         {
-            var numOfDays = (timeTo - timeFrom).Days;
-            foreach(var currency in currencyValues)
+            var dataSet = new DataSet() {CurrencyName = key, Items = new List<DataItem>()};
+            foreach(var kkey in d[key].Keys)
             {
-                var t = 0;
-                DataSet newSet = new DataSet
-                {
-                    Items = new DataItem[numOfDays],
-                    CurrencyName = currency
-                };
-                newSet.Items = newSet.Items.Select(item => {
-                    item.Date = DateTime.Now.Date.AddDays(t++);
-                    item.CurrencyRate = (new Random().NextDouble() * 0.2) + 2;
-                    return item;
-                }).ToArray();
-                data.Add(newSet);
-            Console.WriteLine(newSet.CurrencyName);
-            Console.WriteLine(string.Join(", ", newSet.Items));
+                var date = kkey.FromTimestamp();
+                dataSet.Items.Add(new DataItem() {Date = date, CurrencyRate = d[key][kkey]});
+                Console.WriteLine(d[key][kkey]);
             }
-
+            data.Add(dataSet);
         }
 
-        // TODO: CALL API TO RETREIVE DATA
+        StateHasChanged();
     }
 }

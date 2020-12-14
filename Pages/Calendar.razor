@@ -1,6 +1,8 @@
 @page "/calendar"
 @using Models
-
+@using System.Text
+@using Newtonsoft.Json
+@inject HttpClient client
 
 <h1>Calendar</h1>
 
@@ -41,32 +43,29 @@ else
         GetData();
     }
 
-    void GetData()
+    async void GetData()
     {
         data.Clear();
-        if (currencyValues.Any())
+        var json = new Request() {
+            begin = timeFrom.ToTimestamp().ToString(), end = timeTo.ToTimestamp().ToString(), currency_names = currencyValues.ToArray()
+            }.ToJson();
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("http://localhost:5000/get_currency", content);
+        var tt = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(tt);
+        var d = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, double>>>(tt);
+        foreach(var key in d.Keys)
         {
-            var numOfDays = (timeTo - timeFrom).Days;
-            foreach(var currency in currencyValues)
+            var dataSet = new DataSet() {CurrencyName = key, Items = new List<DataItem>()};
+            foreach(var kkey in d[key].Keys)
             {
-                var t = numOfDays;
-                DataSet newSet = new DataSet
-                {
-                    Items = new DataItem[numOfDays],
-                    CurrencyName = currency
-                };
-                newSet.Items = newSet.Items.Select(item => {
-                    item.Date = DateTime.Now.Date.AddDays(-t--);
-                    item.CurrencyRate = (new Random().NextDouble() * 0.2) + 2;
-                    return item;
-                }).ToArray();
-                data.Add(newSet);
-            Console.WriteLine(newSet.CurrencyName);
-            Console.WriteLine(string.Join(", ", newSet.Items));
+                var date = kkey.FromTimestamp();
+                dataSet.Items.Add(new DataItem() {Date = date, CurrencyRate = d[key][kkey]});
+                Console.WriteLine(d[key][kkey]);
             }
-
+            data.Add(dataSet);
         }
 
-        // TODO: CALL API TO RETREIVE DATA
+        StateHasChanged();
     }
 }

@@ -1,8 +1,10 @@
+using System.Collections.Generic;
+
 namespace CurrencyPrognoser.Models
 {
     public struct DataSet
     {
-        public DataItem[] Items { get; set; }
+        public List<DataItem> Items { get; set; }
         public string CurrencyName { get; set; }
     }
 }
