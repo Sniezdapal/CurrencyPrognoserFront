@@ -1,22 +1,27 @@
-@page "/calculator"
+@page "/stock-calculator"
 @using Models
-@using System.Text
-@using Newtonsoft.Json
-@inject HttpClient client
-<h1>Calculator</h1>
-<h6>Choose date to predict currency rate changes:</h6>
+@inject RandomData randData
+<h1>Stock calculator</h1>
+<h6>Choose date to predict stock changes:</h6>
 <RadzenDatePicker @bind-Value=@timeTo DateFormat="d" Style="margin-bottom: 20px;"></RadzenDatePicker>
 @if (CheckDate())
 {
-    <h6>Now tell us what currency to track:</h6>
+    <h6>Now tell us what stock to track:</h6>
     <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Multiple="true"
     Data=currencyList @bind-Value=currencyValues Style="margin-bottom: 20px; display: block;" />
     <RadzenButton Text="Get Data!" Click="@(args => Plot())" Style="margin-bottom: 20px;" />
-    @if (data.Count != 0)
+    @if (isDataLoaded)
     {
         <h2>Currency rates for @string.Join(", ", currencyValues)</h2>
         <span>I want it to be smooth!</span>
-        <Chart Data=data></Chart>
+        <ColumnChart Data=data></ColumnChart>
+    }
+    else
+    {
+        if(data != null)
+        {
+            <h2>Loading...</h2>
+        }
     }
 }
 else
@@ -25,12 +30,12 @@ else
 }
 
 @code {
-    DateTime timeFrom = DateTime.Now.Date.AddDays(-30);
+    DateTime timeFrom = DateTime.Now.Date.AddDays(-5);
     DateTime timeTo = DateTime.Now.Date.AddDays(10);
-    bool isSmooth = false;
+    bool isDataLoaded = false;
     IEnumerable<string> currencyValues = new string[] { "USD" };
     IEnumerable<string> currencyList = new string[] { "USD", "EUR" };
-    List<DataSet> data = new List<DataSet>();
+    List<DataSet> data;
 
     bool CheckDate()
     {
@@ -43,15 +48,10 @@ else
 
     async void GetData()
     {
+        isDataLoaded = false;
+        data = new List<DataSet>();
         data.Clear();
-        var json = new Request() {
-            begin = timeFrom.ToTimestamp().ToString(), end = timeTo.ToTimestamp().ToString(), currency_names = currencyValues.ToArray()
-            }.ToJson();
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await client.PostAsync("http://localhost:5000/get_currency", content);
-        var tt = await response.Content.ReadAsStringAsync();
-        Console.WriteLine(tt);
-        var d = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, double>>>(tt);
+        var d = await randData.GetData(timeFrom, timeTo, currencyValues);
         foreach(var key in d.Keys)
         {
             var dataSet = new DataSet() {CurrencyName = key, Items = new List<DataItem>()};
@@ -64,6 +64,7 @@ else
             data.Add(dataSet);
         }
 
+        isDataLoaded = true;
         StateHasChanged();
     }
 }
