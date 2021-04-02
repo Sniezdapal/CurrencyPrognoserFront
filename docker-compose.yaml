@@ -1,0 +1,8 @@
+services:
+  currency_prognoser_front:
+    image: currency_prognoser_front
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:3000
