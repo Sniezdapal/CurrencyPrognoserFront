@@ -1,6 +1,6 @@
 @page "/stock-calculator"
 @using Models
-@inject RandomData randData
+@inject IDataProvider randData
 <h1>Stock calculator</h1>
 <h6>Choose date to predict stock changes:</h6>
 <RadzenDatePicker @bind-Value=@timeTo DateFormat="d" Style="margin-bottom: 20px;"></RadzenDatePicker>
@@ -51,18 +51,7 @@ else
         isDataLoaded = false;
         data = new List<DataSet>();
         data.Clear();
-        var d = await randData.GetData(timeFrom, timeTo, currencyValues);
-        foreach(var key in d.Keys)
-        {
-            var dataSet = new DataSet() {CurrencyName = key, Items = new List<DataItem>()};
-            foreach(var kkey in d[key].Keys)
-            {
-                var date = kkey.FromTimestamp();
-                dataSet.Items.Add(new DataItem() {Date = date, CurrencyRate = d[key][kkey]});
-                Console.WriteLine(d[key][kkey]);
-            }
-            data.Add(dataSet);
-        }
+        data = await randData.GetData(timeFrom, timeTo, currencyValues);
 
         isDataLoaded = true;
         StateHasChanged();

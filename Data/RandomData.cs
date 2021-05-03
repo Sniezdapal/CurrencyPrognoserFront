@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Models;
 
 public class RandomData : IDataProvider
 {
@@ -12,19 +13,20 @@ public class RandomData : IDataProvider
     {
         _client = client;
     }
-    public async Task<Dictionary<string, Dictionary<string, double>>> GetData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> currencies)
+    public async Task<List<DataSet>> GetData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> currencies)
     {
-        Dictionary<string, Dictionary<string, double>> data = new Dictionary<string, Dictionary<string, double>>();
-        foreach(var currency in currencies)
+        var datas = new List<DataSet>();
+        foreach (var currency in currencies)
         {
-            var values = new Dictionary<string, double>();
+            var data = new DataSet() { CurrencyName = currency, Items = new List<DataItem>() };
             for (var i = timeFrom; i < timeTo; i = i.AddDays(1))
             {
-                values.Add(i.ToTimestamp().ToString(), rand.NextDouble() * 10);
+                var dataItem = new DataItem() {Date = i, CurrencyRate = rand.NextDouble() * 10};
+                data.Items.Add(dataItem);
             }
-            data.Add(currency, values);
+            datas.Add(data);
         }
         await Task.Delay(500);
-        return data;
+        return datas;
     }
 }

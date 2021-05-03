@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace CurrencyPrognoser.Models
+namespace Models
 {
     public struct DataSet
     {

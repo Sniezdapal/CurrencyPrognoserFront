@@ -1,0 +1,70 @@
+@page "/currency-calculators"
+@inject ICurrencyProvider _currencies
+@inject IModelProvider _models
+@inject IDataProvider Data
+<RadzenSteps>
+    <Steps>
+        <RadzenStepsItem Text="Pick date">
+            <h3>Select date</h3>
+            <h6>Select last date to predict</h6>
+            <RadzenDatePicker @bind-Value=timeTo DateFormat="d" Style="margin: 20px;" />
+            @if ((timeTo - timeFrom).TotalDays < 1)
+                    {
+            <h6>Selected date must be tomorrow or later!</h6>
+            }
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Pick currencies" Disabled="@((timeTo - timeFrom).TotalDays < 1)">
+            <h3>Select currencies</h3>
+            <h6>Selected currencies for prediction</h6>
+            <RadzenListBox AllowFiltering=true FilterCaseSensitivity=FilterCaseSensitivity.CaseInsensitive Multiple=true
+                Data=_availableCurrencies @bind-Value=_selectedCurrencies />
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Pick prediction model" Disabled="@(_selectedCurrencies.Count() == 0)">
+            <h3>Select prediction model</h3>
+            <h6>Select model to predict currencies: @string.Join(", ", _selectedCurrencies)</h6>
+            <RadzenRadioButtonList @bind-Value=_selectedModel TValue="string">
+                <Items>
+                    @foreach (var model in _availableModels)
+                    {
+                        <RadzenRadioButtonListItem Text=@model Value=@model TValue="string"/>
+                    }
+                </Items>
+            </RadzenRadioButtonList>
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Predict" Disabled="@(_selectedModel == null)">
+            <RadzenButton Text="Predict!" Click=LoadData/>
+            @if(_showLoading)
+            {
+                <RadzenProgressBar Value=100 ShowValue=false Mode=ProgressBarMode.Indeterminate Style="margin: 20px"/>
+            }
+            else if(_data != null)
+            {
+                <Chart Data=_data/>
+            }
+        </RadzenStepsItem>
+    </Steps>
+</RadzenSteps>
+
+@code
+{
+    DateTime timeFrom = DateTime.Now.Date;
+    DateTime timeTo = DateTime.Now.Date.AddDays(1);
+    IEnumerable<string> _selectedCurrencies = new string[] { };
+    IEnumerable<string> _availableCurrencies;
+    IEnumerable<string> _availableModels;
+    string _selectedModel;
+    List<DataSet> _data;
+    bool _showLoading = false;
+    protected override void OnInitialized()
+    {
+        _availableCurrencies = _currencies.GetCurrencies();
+        _availableModels = _models.GetModels();
+    }
+
+    private async Task LoadData()
+    {
+        _showLoading = true;
+        _data = await Data.GetData(timeFrom, timeTo, _selectedCurrencies);
+        _showLoading = false;
+    }
+}
