@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public interface ICurrencyProvider
 {
-    public IEnumerable<string> GetCurrencies();
+    public Task<IEnumerable<string>> GetCurrencies();
 }

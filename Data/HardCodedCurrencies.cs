@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class HardCodedCurrencies : ICurrencyProvider
 {
-    public IEnumerable<string> GetCurrencies()
+    public async Task<IEnumerable<string>> GetCurrencies()
     {
-        return new List<string> {"USD", "EUR"};
+        return await Task.FromResult(new List<string> {"USD", "EUR"});
     }
 }

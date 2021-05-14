@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public interface IModelProvider
 {
-    public IEnumerable<string> GetModels();
+    public Task<IEnumerable<string>> GetModels();
 }

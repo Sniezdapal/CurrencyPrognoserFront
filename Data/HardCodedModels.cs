@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class HardCodedModels : IModelProvider
 {
-    public IEnumerable<string> GetModels()
+    public async Task<IEnumerable<string>> GetModels()
     {
-        return new string[] { "ARIMA", "TOWER OF GOD", "BATHOMET" };
+        return await Task.FromResult(new string[] { "ARIMA", "TOWER OF GOD", "BATHOMET" });
     }
 }

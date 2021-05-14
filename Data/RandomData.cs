@@ -13,20 +13,18 @@ public class RandomData : IDataProvider
     {
         _client = client;
     }
-    public async Task<List<DataSet>> GetData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> currencies)
+    public async Task<DataSet> GetData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> currencies, string model)
     {
-        var datas = new List<DataSet>();
+        var data = new DataSet();
         foreach (var currency in currencies)
         {
-            var data = new DataSet() { CurrencyName = currency, Items = new List<DataItem>() };
             for (var i = timeFrom; i < timeTo; i = i.AddDays(1))
             {
-                var dataItem = new DataItem() {Date = i, CurrencyRate = rand.NextDouble() * 10};
-                data.Items.Add(dataItem);
+                var dataItem = new DataItem() {Date = i, CurrencyRate = 2.5 + rand.NextDouble() * 1};
+                data[currency].Add(dataItem);
             }
-            datas.Add(data);
         }
         await Task.Delay(500);
-        return datas;
+        return data;
     }
 }

@@ -53,18 +53,18 @@
     IEnumerable<string> _availableCurrencies;
     IEnumerable<string> _availableModels;
     string _selectedModel;
-    List<DataSet> _data;
+    DataSet _data;
     bool _showLoading = false;
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        _availableCurrencies = _currencies.GetCurrencies();
-        _availableModels = _models.GetModels();
+        _availableCurrencies = await _currencies.GetCurrencies();
+        _availableModels = await _models.GetModels();
     }
 
     private async Task LoadData()
     {
         _showLoading = true;
-        _data = await Data.GetData(timeFrom, timeTo, _selectedCurrencies);
+        _data = await Data.GetData(timeFrom, timeTo, _selectedCurrencies, _selectedModel);
         _showLoading = false;
     }
 }

@@ -7,5 +7,5 @@ using Models;
 
 public interface IDataProvider
 {
-    public Task<List<DataSet>> GetData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> currencies);
+    public Task<DataSet> GetData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> currencies, string model);
 }
