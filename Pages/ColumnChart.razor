@@ -1,0 +1,17 @@
+﻿@using Models
+<div>
+    <RadzenChart>
+        @foreach (var dataSet in Data)
+        {
+            <RadzenColumnSeries Data="@dataSet.Value" CategoryProperty="Date" ValueProperty="CurrencyRate"
+            Title="@dataSet.Key">
+                <RadzenMarkers MarkerType="MarkerType.Circle" />
+            </RadzenColumnSeries>
+        }
+    </RadzenChart>
+</div>
+
+@code {
+    [Parameter]
+    public DataSet Data { get; set; }
+}
