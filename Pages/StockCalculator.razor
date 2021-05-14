@@ -1,6 +1,5 @@
 @page "/stock-calculators"
-@inject ICurrencyProvider _currencies
-@inject IModelProvider _models
+@inject ConfigurationProvider _conf
 @inject IDataProvider Data
 <RadzenSteps>
     <Steps>
@@ -17,11 +16,11 @@
             <h3>Select stocks</h3>
             <h6>Select stocks for prediction</h6>
             <RadzenListBox AllowFiltering=true FilterCaseSensitivity=FilterCaseSensitivity.CaseInsensitive Multiple=true
-                Data=_availableCurrencies @bind-Value=_selectedCurrencies />
+                Data=_availableStocks @bind-Value=_selectedStocks />
         </RadzenStepsItem>
-        <RadzenStepsItem Text="Pick prediction model" Disabled="@(_selectedCurrencies.Count() == 0)">
+        <RadzenStepsItem Text="Pick prediction model" Disabled="@(_selectedStocks.Count() == 0)">
             <h3>Select prediction model</h3>
-            <h6>Select model to predict stocks: @string.Join(", ", _selectedCurrencies)</h6>
+            <h6>Select model to predict stocks: @string.Join(", ", _selectedStocks)</h6>
             <RadzenRadioButtonList @bind-Value=_selectedModel TValue="string">
                 <Items>
                     @foreach (var model in _availableModels)
@@ -49,22 +48,23 @@
 {
     DateTime timeFrom = DateTime.Now.Date;
     DateTime timeTo = DateTime.Now.Date.AddDays(1);
-    IEnumerable<string> _selectedCurrencies = new string[] { };
-    IEnumerable<string> _availableCurrencies;
+    IEnumerable<string> _selectedStocks = new string[] { };
+    IEnumerable<string> _availableStocks;
     IEnumerable<string> _availableModels;
     string _selectedModel;
     DataSet _data;
     bool _showLoading = false;
     protected override async Task OnInitializedAsync()
     {
-        _availableCurrencies = await _currencies.GetCurrencies();
-        _availableModels = await _models.GetModels();
+        await _conf.InitAsync();
+        _availableStocks = _conf.GetStocks();
+        _availableModels = _conf.GetModels();
     }
 
     private async Task LoadData()
     {
         _showLoading = true;
-        _data = await Data.GetData(timeFrom, timeTo, _selectedCurrencies, _selectedModel);
+        _data = await Data.GetStockData(timeFrom, timeTo, _selectedStocks, _selectedModel);
         _showLoading = false;
     }
 }

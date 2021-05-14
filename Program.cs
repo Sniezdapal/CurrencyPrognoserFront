@@ -18,10 +18,9 @@ namespace CurrencyPrognoser
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            builder.Services.AddScoped<IDataProvider, ServerData>();
-            builder.Services.AddScoped<ICurrencyProvider, ConfigurationProvider>();
-            builder.Services.AddScoped<IModelProvider, ConfigurationProvider>();
+            builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddSingleton<IDataProvider, ServerData>();
+            builder.Services.AddSingleton<ConfigurationProvider>();
 
             await builder.Build().RunAsync();
         }

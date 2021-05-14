@@ -27,4 +27,9 @@ public class RandomData : IDataProvider
         await Task.Delay(500);
         return data;
     }
+
+    public Task<DataSet> GetStockData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> stocks, string model)
+    {
+        throw new NotImplementedException();
+    }
 }

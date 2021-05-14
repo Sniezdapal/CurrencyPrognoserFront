@@ -29,10 +29,33 @@ namespace Data
             var response = await _client.PostAsJsonAsync($"{_serverUrl}/get_currency", body);
             var responseObject = await response.Content.ReadAsAsync<Dictionary<string, Dictionary<string, double>>>();
             var datas = new DataSet();
-            foreach(var currency in responseObject.Keys)
+            foreach (var currency in responseObject.Keys)
             {
                 var rateList = new List<DataItem>();
-                foreach(var rates in responseObject[currency])
+                foreach (var rates in responseObject[currency])
+                {
+                    rateList.Add(new DataItem { Date = rates.Key.FromTimestamp(), CurrencyRate = rates.Value });
+                }
+                datas[currency] = rateList;
+            }
+            return datas;
+        }
+        public async Task<DataSet> GetStockData(DateTime timeFrom, DateTime timeTo, IEnumerable<string> stocks, string model)
+        {
+            var body = new
+            {
+                begin = timeFrom.ToTimestamp(),
+                end = timeTo.ToTimestamp(),
+                stock_names = stocks,
+                model = model
+            };
+            var response = await _client.PostAsJsonAsync($"{_serverUrl}/get_stock", body);
+            var responseObject = await response.Content.ReadAsAsync<Dictionary<string, Dictionary<string, double>>>();
+            var datas = new DataSet();
+            foreach (var currency in responseObject.Keys)
+            {
+                var rateList = new List<DataItem>();
+                foreach (var rates in responseObject[currency])
                 {
                     rateList.Add(new DataItem { Date = rates.Key.FromTimestamp(), CurrencyRate = rates.Value });
                 }

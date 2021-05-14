@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class HardCodedModels : IModelProvider
+public class HardCodedModels
 {
     public async Task<IEnumerable<string>> GetModels()
     {

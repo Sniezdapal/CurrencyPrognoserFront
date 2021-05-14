@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-public class ConfigurationProvider : ICurrencyProvider, IModelProvider
+public class ConfigurationProvider
 {
     public ServerConf Conf { get; private set; }
     string _serverUrl;
@@ -16,23 +16,24 @@ public class ConfigurationProvider : ICurrencyProvider, IModelProvider
         _client = client;
 
     }
-    public async Task<IEnumerable<string>> GetCurrencies()
+    public async Task InitAsync()
     {
         var response = await _client.GetAsync($"{_serverUrl}/configuration");
         var body = await response.Content.ReadAsStringAsync();
         // var body = "{'models': ['autoregressive', 'regressive', 'exponential'], 'currencies': ['USD', 'EUR']}";
         Conf = JsonConvert.DeserializeObject<ServerConf>(body);
+    }
+    public IEnumerable<string> GetCurrencies()
+    {
         return Conf.Currencies;
     }
 
-    public async Task<IEnumerable<string>> GetModels()
+    public IEnumerable<string> GetModels()
     {
-        var response = await _client.GetAsync($"{_serverUrl}/configuration");
-        var body = await response.Content.ReadAsStringAsync();
-        // var body = "{'models': ['autoregressive', 'regressive', 'exponential'], 'currencies': ['USD', 'EUR']}";
-        Conf = JsonConvert.DeserializeObject<ServerConf>(body);
         return Conf.Models;
     }
+
+    public IEnumerable<string> GetStocks() => Conf.Stocks;
 }
 
 public class ServerConf
@@ -41,4 +42,6 @@ public class ServerConf
     public IEnumerable<string> Models { get; set; }
     [JsonProperty("currencies")]
     public IEnumerable<string> Currencies { get; set; }
+    [JsonProperty("stocks")]
+    public IEnumerable<string> Stocks { get; set; }
 }

@@ -1,6 +1,5 @@
 @page "/currency-calculators"
-@inject ICurrencyProvider _currencies
-@inject IModelProvider _models
+@inject ConfigurationProvider _conf
 @inject IDataProvider Data
 <RadzenSteps>
     <Steps>
@@ -57,8 +56,9 @@
     bool _showLoading = false;
     protected override async Task OnInitializedAsync()
     {
-        _availableCurrencies = await _currencies.GetCurrencies();
-        _availableModels = await _models.GetModels();
+        await _conf.InitAsync();
+        _availableCurrencies = _conf.GetCurrencies();
+        _availableModels = _conf.GetModels();
     }
 
     private async Task LoadData()

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class HardCodedCurrencies : ICurrencyProvider
+public class HardCodedCurrencies
 {
     public async Task<IEnumerable<string>> GetCurrencies()
     {

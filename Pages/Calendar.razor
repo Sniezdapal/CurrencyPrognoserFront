@@ -1,5 +1,5 @@
 @page "/calendar"
-@inject ICurrencyProvider _currencies
+@inject ConfigurationProvider _conf
 @inject IDataProvider Data
 <RadzenSteps>
     <Steps>
@@ -51,7 +51,8 @@
     bool _showLoading = false;
     protected override async Task OnInitializedAsync()
     {
-        _availableCurrencies = await _currencies.GetCurrencies();
+        await _conf.InitAsync();
+        _availableCurrencies = _conf.GetCurrencies();
     }
 
     private async Task LoadData()
